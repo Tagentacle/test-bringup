@@ -29,6 +29,7 @@ asyncio_mode = "auto"
 timeout = 30
 testpaths = ["tests"]
 markers = [
+    "integration: daemon + SDK integration tests (default, lightweight)",
     "e2e: full-stack end-to-end tests (require all ecosystem nodes)",
     "slow: marks tests that take >10s (deselect with '-m not slow')",
     "mcp: marks tests requiring MCP dependencies",

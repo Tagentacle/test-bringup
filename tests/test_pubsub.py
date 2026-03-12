@@ -15,6 +15,7 @@ import asyncio
 import pytest
 
 
+@pytest.mark.integration
 @pytest.mark.usefixtures("daemon")
 class TestPubSub:
     """Basic publish-subscribe round-trip tests."""

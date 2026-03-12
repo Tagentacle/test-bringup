@@ -14,6 +14,7 @@ import asyncio
 import pytest
 
 
+@pytest.mark.integration
 @pytest.mark.usefixtures("daemon")
 class TestNodeEvents:
     """Node lifecycle event tests."""
