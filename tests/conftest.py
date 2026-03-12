@@ -79,7 +79,7 @@ def daemon(daemon_binary, daemon_host, daemon_port):
     Yields the subprocess.Popen object. Kills the daemon after all tests.
     """
     proc = subprocess.Popen(
-        [daemon_binary, "--host", daemon_host, "--port", str(daemon_port)],
+        [daemon_binary, "daemon", "--addr", f"{daemon_host}:{daemon_port}"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
