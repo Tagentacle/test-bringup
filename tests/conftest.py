@@ -78,6 +78,10 @@ def daemon(daemon_binary, daemon_host, daemon_port):
 
     Yields the subprocess.Popen object. Kills the daemon after all tests.
     """
+    # Set TAGENTACLE_DAEMON_URL so the SDK auto-connects to our daemon
+    daemon_url = f"tcp://{daemon_host}:{daemon_port}"
+    os.environ["TAGENTACLE_DAEMON_URL"] = daemon_url
+
     proc = subprocess.Popen(
         [daemon_binary, "daemon", "--addr", f"{daemon_host}:{daemon_port}"],
         stdout=subprocess.PIPE,
@@ -107,8 +111,11 @@ def daemon(daemon_binary, daemon_host, daemon_port):
 
 
 @pytest.fixture
-async def make_node(daemon_host, daemon_port):
+async def make_node(daemon):
     """Factory fixture that creates connected Nodes and cleans them up.
+
+    Depends on ``daemon`` to ensure the daemon is running and
+    TAGENTACLE_DAEMON_URL is set.
 
     Usage:
         async def test_something(make_node):
@@ -120,7 +127,7 @@ async def make_node(daemon_host, daemon_port):
     nodes = []
 
     async def _factory(node_id: str, **kwargs) -> Node:
-        node = Node(node_id, host=daemon_host, port=daemon_port, **kwargs)
+        node = Node(node_id, **kwargs)
         await node.start()
         nodes.append(node)
         return node
