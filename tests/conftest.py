@@ -128,7 +128,7 @@ async def make_node(daemon):
 
     async def _factory(node_id: str, **kwargs) -> Node:
         node = Node(node_id, **kwargs)
-        await node.start()
+        await node.connect()
         nodes.append(node)
         return node
 
@@ -137,6 +137,6 @@ async def make_node(daemon):
     # Teardown all created nodes
     for node in nodes:
         try:
-            await node.stop()
+            await node.disconnect()
         except Exception:
             pass
