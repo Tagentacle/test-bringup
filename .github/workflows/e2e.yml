@@ -1,0 +1,80 @@
+name: E2E Integration Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allow manual triggering (useful for testing after upstream changes)
+  workflow_dispatch:
+    inputs:
+      daemon_ref:
+        description: "Git ref for tagentacle daemon (branch/tag/sha)"
+        default: "main"
+      sdk_core_ref:
+        description: "Git ref for python-sdk-core"
+        default: "main"
+      sdk_mcp_ref:
+        description: "Git ref for python-sdk-mcp"
+        default: "main"
+
+jobs:
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout test-bringup
+        uses: actions/checkout@v4
+
+      # --- Build Daemon from source ---
+      - name: Checkout tagentacle daemon
+        uses: actions/checkout@v4
+        with:
+          repository: Tagentacle/tagentacle
+          ref: ${{ github.event.inputs.daemon_ref || 'main' }}
+          path: _deps/tagentacle
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: _deps/tagentacle
+
+      - name: Build daemon
+        run: cd _deps/tagentacle && cargo build --release
+
+      # --- Set up Python SDK ---
+      - name: Checkout python-sdk-core
+        uses: actions/checkout@v4
+        with:
+          repository: Tagentacle/python-sdk-core
+          ref: ${{ github.event.inputs.sdk_core_ref || 'main' }}
+          path: _deps/python-sdk-core
+
+      - name: Checkout python-sdk-mcp
+        uses: actions/checkout@v4
+        with:
+          repository: Tagentacle/python-sdk-mcp
+          ref: ${{ github.event.inputs.sdk_mcp_ref || 'main' }}
+          path: _deps/python-sdk-mcp
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -e _deps/python-sdk-core[validation]
+          pip install -e _deps/python-sdk-mcp
+          pip install -e ".[dev]"
+
+      # --- Run E2E tests ---
+      - name: Run tests
+        env:
+          TAGENTACLE_BIN: _deps/tagentacle/target/release/tagentacle
+        run: pytest -v --timeout=30

@@ -1,0 +1,38 @@
+[project]
+name = "test-bringup"
+version = "0.1.0"
+description = "End-to-end integration tests for the Tagentacle system"
+requires-python = ">=3.10"
+dependencies = [
+    "tagentacle-py-core>=0.3.0",
+]
+
+[project.optional-dependencies]
+mcp = [
+    "tagentacle-py-mcp>=0.4.0",
+]
+validation = [
+    "jsonschema>=4.0",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-timeout>=2.0",
+]
+
+[tool.uv.sources]
+tagentacle-py-core = { path = "../python-sdk-core", editable = true }
+tagentacle-py-mcp = { path = "../python-sdk-mcp", editable = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+timeout = 30
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests that take >10s (deselect with '-m not slow')",
+    "mcp: marks tests requiring MCP dependencies",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,22 @@
+[package]
+name = "test_bringup"
+version = "0.1.0"
+description = "End-to-end integration test suite for Tagentacle — starts real Daemon + SDK nodes, verifies full system behavior"
+authors = ["Tagentacle Contributors"]
+type = "bringup"
+
+# --- Workspace Repository Dependencies ---
+# `tagentacle setup dep --all` clones these into workspace src/
+
+[workspace.repos.tagentacle]
+git = "https://github.com/Tagentacle/tagentacle.git"
+description = "Rust daemon — built from source for e2e tests"
+
+[workspace.repos.python_sdk_core]
+git = "https://github.com/Tagentacle/python-sdk-core.git"
+
+[workspace.repos.python_sdk_mcp]
+git = "https://github.com/Tagentacle/python-sdk-mcp.git"
+
+[workspace.repos.mcp_interfaces]
+git = "https://github.com/Tagentacle/mcp-interfaces.git"
