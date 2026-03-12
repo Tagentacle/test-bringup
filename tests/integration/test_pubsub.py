@@ -1,8 +1,13 @@
 """
-End-to-end tests for Topic Pub/Sub.
+Integration tests for Topic Pub/Sub.
 
 Verifies that messages published to a topic are delivered to all subscribers
 through the real Tagentacle daemon.
+
+Uses the real Node API:
+  - node.subscribe(topic)(callback)   — decorator/callable style
+  - await node.publish(topic, payload)
+  - spin() runs in background via make_node fixture
 """
 
 import asyncio
@@ -22,13 +27,14 @@ class TestPubSub:
         pub = await make_node("e2e_pub_1")
         sub = await make_node("e2e_sub_1")
 
+        @sub.subscribe("/test/e2e/basic")
         async def on_message(msg):
-            received_data.update(msg)
+            payload = msg.get("payload", msg)
+            received_data.update(payload)
             received.set()
 
-        await sub.subscribe("/test/e2e/basic", on_message)
         # Small delay to let subscription propagate through daemon
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.3)
 
         await pub.publish("/test/e2e/basic", {"hello": "world", "seq": 1})
 
@@ -47,20 +53,19 @@ class TestPubSub:
             sub = await make_node(f"e2e_sub_multi_{i}")
             idx = i  # capture
 
+            @sub.subscribe("/test/e2e/multi")
             async def on_msg(msg, _idx=idx):
                 events[_idx].set()
 
-            await sub.subscribe("/test/e2e/multi", on_msg)
             subs.append(sub)
 
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.3)
         await pub.publish("/test/e2e/multi", {"fanout": True})
 
         await asyncio.wait_for(
             asyncio.gather(*(e.wait() for e in events)),
             timeout=5.0,
         )
-        # All events set means all subscribers received the message
         assert all(e.is_set() for e in events)
 
     async def test_no_cross_topic_delivery(self, make_node):
@@ -70,11 +75,11 @@ class TestPubSub:
         pub = await make_node("e2e_pub_iso")
         sub = await make_node("e2e_sub_iso")
 
+        @sub.subscribe("/test/e2e/topic_b")
         async def should_not_fire(msg):
             wrong_topic_received.set()
 
-        await sub.subscribe("/test/e2e/topic_b", should_not_fire)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.3)
 
         await pub.publish("/test/e2e/topic_a", {"data": "for_a_only"})
 
@@ -91,13 +96,14 @@ class TestPubSub:
         pub = await make_node("e2e_pub_order")
         sub = await make_node("e2e_sub_order")
 
+        @sub.subscribe("/test/e2e/order")
         async def on_msg(msg):
-            received_seqs.append(msg["seq"])
+            payload = msg.get("payload", msg)
+            received_seqs.append(payload["seq"])
             if len(received_seqs) >= n:
                 done.set()
 
-        await sub.subscribe("/test/e2e/order", on_msg)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.3)
 
         for i in range(n):
             await pub.publish("/test/e2e/order", {"seq": i})

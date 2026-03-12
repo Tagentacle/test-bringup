@@ -112,10 +112,13 @@ def daemon(daemon_binary, daemon_host, daemon_port):
 
 @pytest.fixture
 async def make_node(daemon):
-    """Factory fixture that creates connected Nodes and cleans them up.
+    """Factory fixture that creates connected & spinning Nodes.
 
     Depends on ``daemon`` to ensure the daemon is running and
     TAGENTACLE_DAEMON_URL is set.
+
+    Each node is connected and has ``spin()`` running in a background task
+    so it will receive messages/service-calls automatically.
 
     Usage:
         async def test_something(make_node):
@@ -124,18 +127,25 @@ async def make_node(daemon):
     """
     from tagentacle_py_core import Node
 
-    nodes = []
+    nodes: list[tuple[Node, asyncio.Task]] = []
 
     async def _factory(node_id: str, **kwargs) -> Node:
         node = Node(node_id, **kwargs)
         await node.connect()
-        nodes.append(node)
+        # Start spin() in background so the node receives dispatched messages
+        spin_task = asyncio.create_task(node.spin())
+        nodes.append((node, spin_task))
         return node
 
     yield _factory
 
     # Teardown all created nodes
-    for node in nodes:
+    for node, task in nodes:
+        task.cancel()
+        try:
+            await task
+        except (asyncio.CancelledError, Exception):
+            pass
         try:
             await node.disconnect()
         except Exception:

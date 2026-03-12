@@ -1,8 +1,12 @@
 """
-End-to-end tests for schema validation.
+Integration tests for schema validation.
 
 Verifies that Node-side schema validation (strict/warn/off modes) works
 correctly when connected to a real Daemon.
+
+Uses the real Node API:
+  - node.schema_registry.register(topic, schema)
+  - node.validation_mode = "strict"
 """
 
 import asyncio
@@ -21,7 +25,6 @@ class TestSchemaValidation:
         pub = await make_node("e2e_schema_pub")
         sub = await make_node("e2e_schema_sub")
 
-        # Register a simple schema manually
         schema = {
             "type": "object",
             "properties": {
@@ -30,15 +33,15 @@ class TestSchemaValidation:
             "required": ["value"],
         }
         pub.schema_registry.register("/test/e2e/typed", schema)
-        pub.schema_validation_mode = "strict"
+        pub.validation_mode = "strict"
 
         sub.schema_registry.register("/test/e2e/typed", schema)
 
-        async def on_msg(msg):
+        @sub.subscribe("/test/e2e/typed")
+        async def on_msg(msg):  # noqa: ARG001
             received.set()
 
-        await sub.subscribe("/test/e2e/typed", on_msg)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.3)
 
         # Valid payload — should pass
         await pub.publish("/test/e2e/typed", {"value": 42})
@@ -58,7 +61,7 @@ class TestSchemaValidation:
             "required": ["value"],
         }
         pub.schema_registry.register("/test/e2e/strict_reject", schema)
-        pub.schema_validation_mode = "strict"
+        pub.validation_mode = "strict"
 
         with pytest.raises(SchemaValidationError):
             await pub.publish("/test/e2e/strict_reject", {"value": "not_an_int"})
@@ -69,8 +72,12 @@ class TestSchemaValidation:
         sub = await make_node("e2e_no_schema_sub")
 
         received = asyncio.Event()
-        await sub.subscribe("/test/e2e/untyped", lambda msg: received.set())
-        await asyncio.sleep(0.1)
+
+        @sub.subscribe("/test/e2e/untyped")
+        async def on_msg(msg):  # noqa: ARG001
+            received.set()
+
+        await asyncio.sleep(0.3)
 
         # Any payload goes through
         await pub.publish("/test/e2e/untyped", {"anything": [1, "two", None]})

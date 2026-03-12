@@ -1,8 +1,12 @@
 """
-End-to-end tests for node events.
+Integration tests for node events.
 
 Verifies that the Daemon publishes connect/disconnect events to
 /tagentacle/node_events when nodes join or leave.
+
+Uses the real Node API:
+  - node.subscribe(topic)(callback)
+  - node.connect() / node.disconnect()
 """
 
 import asyncio
@@ -22,22 +26,30 @@ class TestNodeEvents:
         # Observer subscribes to node events
         observer = await make_node("e2e_event_observer")
 
+        @observer.subscribe("/tagentacle/node_events")
         async def on_event(msg):
-            events.append(msg)
-            if msg.get("event") == "connected" and msg.get("node_id") == "e2e_newcomer":
+            payload = msg.get("payload", msg)
+            events.append(payload)
+            if (
+                payload.get("event") == "connected"
+                and payload.get("node_id") == "e2e_newcomer"
+            ):
                 done.set()
 
-        await observer.subscribe("/tagentacle/node_events", on_event)
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.3)
 
         # New node connects — should trigger event
-        newcomer = await make_node("e2e_newcomer")
+        _newcomer = await make_node("e2e_newcomer")
 
         await asyncio.wait_for(done.wait(), timeout=5.0)
-        matching = [e for e in events if e.get("node_id") == "e2e_newcomer" and e.get("event") == "connected"]
+        matching = [
+            e
+            for e in events
+            if e.get("node_id") == "e2e_newcomer" and e.get("event") == "connected"
+        ]
         assert len(matching) >= 1
 
-    async def test_node_disconnect_event(self, make_node, daemon_host, daemon_port):
+    async def test_node_disconnect_event(self, make_node):
         """When a node disconnects, /tagentacle/node_events should fire."""
         from tagentacle_py_core import Node
 
@@ -46,20 +58,29 @@ class TestNodeEvents:
 
         observer = await make_node("e2e_dc_observer")
 
+        @observer.subscribe("/tagentacle/node_events")
         async def on_event(msg):
-            events.append(msg)
-            if msg.get("event") == "disconnected" and msg.get("node_id") == "e2e_leaver":
+            payload = msg.get("payload", msg)
+            events.append(payload)
+            if (
+                payload.get("event") == "disconnected"
+                and payload.get("node_id") == "e2e_leaver"
+            ):
                 done.set()
 
-        await observer.subscribe("/tagentacle/node_events", on_event)
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.3)
 
-        # Create and immediately stop a node
-        leaver = Node("e2e_leaver", host=daemon_host, port=daemon_port)
-        await leaver.start()
-        await asyncio.sleep(0.2)
-        await leaver.stop()
+        # Create a node, connect, then disconnect
+        leaver = Node("e2e_leaver")
+        await leaver.connect()
+        await asyncio.sleep(0.3)
+        await leaver.disconnect()
 
         await asyncio.wait_for(done.wait(), timeout=10.0)
-        matching = [e for e in events if e.get("node_id") == "e2e_leaver" and e.get("event") == "disconnected"]
+        matching = [
+            e
+            for e in events
+            if e.get("node_id") == "e2e_leaver"
+            and e.get("event") in ("disconnected", "unregistered")
+        ]
         assert len(matching) >= 1
