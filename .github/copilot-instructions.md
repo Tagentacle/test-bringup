@@ -1,12 +1,15 @@
 # Copilot Instructions — test-bringup
 
 ## Project Overview
-This is the **end-to-end integration test** package for the Tagentacle ecosystem.
-It is NOT a library or runnable node — it only contains pytest-based tests.
+This is the **test package** for the Tagentacle ecosystem. It contains two layers:
+- `tests/integration/` — Daemon + SDK integration tests (CI runs these)
+- `tests/e2e/` — Full-stack E2E tests (require secrets + all ecosystem nodes)
 
 ## Architecture
-- `tests/conftest.py` — Session-scoped fixtures: daemon process, node factory
-- `tests/test_*.py` — Test modules grouped by feature (pubsub, service, schema, events)
+- `tests/conftest.py` — Shared fixtures: daemon process, node factory
+- `tests/integration/test_*.py` — Integration tests (Daemon + SDK only)
+- `tests/e2e/conftest.py` — Full-stack fixture (launches via example-bringup)
+- `tests/e2e/test_*.py` — Full-stack E2E tests
 
 ## Key Dependencies
 - **tagentacle daemon** (Rust binary) — started/stopped by the `daemon` fixture

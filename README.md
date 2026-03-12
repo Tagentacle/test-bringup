@@ -4,11 +4,20 @@ Tagentacle 端到端（E2E）集成测试包。
 
 ## 定位
 
-`test-bringup` 是一个纯测试包，不包含任何可运行的 Node。它的作用是：
+`test-bringup` 是 Tagentacle 生态系统的测试包，包含两级测试：
 
-1. **启动真实 Daemon** — 在测试开始前启动 `tagentacle` 二进制
-2. **使用 SDK 创建 Node** — 通过 `tagentacle-py-core` / `tagentacle-py-mcp` 建立连接
-3. **验证核心路径** — pub/sub、service RPC、schema 校验、节点生命周期事件
+### Integration Tests（`tests/integration/`）
+
+启动 **Daemon + SDK**，验证核心通信路径：
+- pub/sub、service RPC、schema 校验、节点生命周期事件
+- CI 自动运行，轻量快速
+
+### E2E Tests（`tests/e2e/`）
+
+通过 `example-bringup` 启动 **完整生态**：
+- Daemon → MCP Server → Inference → Memory → Agent → Frontend
+- 验证全栈拓扑、节点发现、跨组件通信
+- 需要 API key 等 secrets，手动/本地运行
 
 ## 依赖管理策略
 
@@ -43,14 +52,17 @@ tagentacle-py-mcp  = { path = "../python-sdk-mcp",  editable = true }
 ### 运行测试
 
 ```bash
-# 方式 1: 自动搜索 daemon（按 TAGENTACLE_BIN → workspace → PATH 顺序）
+# 只跑集成测试（CI 默认）
+pytest tests/integration -v
+
+# 只跑 E2E（需要 secrets + 全生态包）
+pytest tests/e2e -v --timeout=120
+
+# 全部跑
 pytest -v
 
-# 方式 2: 显式指定 daemon 路径
-TAGENTACLE_BIN=/path/to/tagentacle pytest -v
-
-# 方式 3: 只跑 pub/sub 相关测试
-pytest -v tests/test_pubsub.py
+# 显式指定 daemon 路径
+TAGENTACLE_BIN=/path/to/tagentacle pytest tests/integration -v
 ```
 
 ### CI 手动触发
@@ -68,20 +80,26 @@ gh workflow run e2e.yml \
 
 ```
 test-bringup/
-├── tagentacle.toml          # 包清单（声明依赖仓库）
-├── pyproject.toml            # Python 项目配置 + pytest 设置
+├── tagentacle.toml              # 包清单（声明依赖仓库）
+├── pyproject.toml                # Python 项目配置 + pytest 设置
 ├── tests/
-│   ├── conftest.py           # Daemon fixture + Node 工厂
-│   ├── test_pubsub.py        # 发布/订阅测试
-│   ├── test_service.py       # Service RPC 测试
-│   ├── test_node_events.py   # 节点事件测试
-│   └── test_schema.py        # Schema 校验测试
+│   ├── conftest.py               # 共享 fixture（Daemon、make_node）
+│   ├── integration/              # 集成测试（Daemon + SDK）
+│   │   ├── test_pubsub.py
+│   │   ├── test_service.py
+│   │   ├── test_node_events.py
+│   │   └── test_schema.py
+│   └── e2e/                      # 全栈 E2E 测试
+│       ├── conftest.py           # full_stack fixture（example-bringup launcher）
+│       └── test_full_stack.py    # 拓扑验证、节点发现、跨组件通信
 └── .github/
     └── workflows/
-        └── e2e.yml           # GitHub Actions E2E 流水线
+        └── e2e.yml               # GitHub Actions CI 流水线
 ```
 
 ## 覆盖的测试场景
+
+### Integration Tests
 
 | 文件               | 测试点                          |
 | ------------------ | ------------------------------- |
@@ -89,3 +107,9 @@ test-bringup/
 | test_service.py    | ping、list_nodes、list_topics、用户自定义 service |
 | test_node_events.py| 节点上线事件、节点离线事件         |
 | test_schema.py     | 严格模式校验、非法消息拒绝、无 schema 透传 |
+
+### E2E Tests
+
+| 文件               | 测试点                          |
+| ------------------ | ------------------------------- |
+| test_full_stack.py | Daemon ping、全节点发现、MCP server 健康检查、Topic 发现、Memory 订阅 |

@@ -29,6 +29,9 @@ asyncio_mode = "auto"
 timeout = 30
 testpaths = ["tests"]
 markers = [
+    "e2e: full-stack end-to-end tests (require all ecosystem nodes)",
+]
+markers = [
     "slow: marks tests that take >10s (deselect with '-m not slow')",
     "mcp: marks tests requiring MCP dependencies",
 ]

@@ -73,8 +73,11 @@ jobs:
           pip install -e _deps/python-sdk-mcp
           pip install -e ".[dev]"
 
-      # --- Run E2E tests ---
-      - name: Run tests
+      # --- Run integration tests ---
+      - name: Run integration tests
         env:
           TAGENTACLE_BIN: _deps/tagentacle/target/release/tagentacle
-        run: pytest -v --timeout=30
+        run: pytest tests/integration -v --timeout=30
+
+      # E2E tests are skipped in CI by default (require secrets + full ecosystem)
+      # To run locally: pytest tests/e2e -v --timeout=120
