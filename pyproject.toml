@@ -1,6 +1,6 @@
 [project]
 name = "test-bringup"
-version = "0.1.0"
+version = "0.2.0"
 description = "End-to-end integration tests for the Tagentacle system"
 requires-python = ">=3.10"
 dependencies = [
@@ -29,8 +29,8 @@ asyncio_mode = "auto"
 timeout = 30
 testpaths = ["tests"]
 markers = [
-    "integration: daemon + SDK integration tests (default, lightweight)",
-    "e2e: full-stack end-to-end tests (require all ecosystem nodes)",
+    "integration: Layer 3 — cross-pkg tests needing daemon + declared deps",
+    "system: Layer 4 — full ecosystem smoke tests (all nodes + gateway)",
     "slow: marks tests that take >10s (deselect with '-m not slow')",
     "mcp: marks tests requiring MCP dependencies",
 ]

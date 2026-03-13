@@ -4,14 +4,14 @@ E2E: Verify the full-stack topology is functioning.
 These tests require the full ecosystem (Daemon + all nodes) to be running
 via the ``full_stack`` fixture. They are expensive — run selectively.
 
-Run with:  pytest tests/test_full_stack.py -m e2e
+Run with:  pytest tests/test_full_stack.py -m system
 """
 
 import asyncio
 
 import pytest
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.system
 
 
 async def _make_probe(full_stack, node_id: str):
