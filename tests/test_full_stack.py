@@ -57,7 +57,12 @@ async def test_list_nodes_shows_all_ecosystem_nodes(full_stack):
         resp = await node.call_service("/tagentacle/list_nodes", {})
         node_ids = [n["node_id"] for n in resp.get("nodes", [])]
 
-        expected_nodes = {"mcp_server_node", "inference_node", "memory_node", "agent_node"}
+        expected_nodes = {
+            "mcp_server_node",
+            "inference_node",
+            "memory_node",
+            "agent_node",
+        }
         found = expected_nodes.intersection(set(node_ids))
 
         assert len(found) >= 3, (

@@ -80,9 +80,7 @@ class TestContainerRuntime:
         cr = pytest.importorskip("container_runtime")
         rt = cr.ContainerRuntime.connect()
         try:
-            containers = rt.list(
-                filters={"label": "tagentacle.test.nonexistent=true"}
-            )
+            containers = rt.list(filters={"label": "tagentacle.test.nonexistent=true"})
             assert isinstance(containers, list)
             assert len(containers) == 0
         finally:

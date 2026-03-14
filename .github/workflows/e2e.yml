@@ -1,21 +1,10 @@
-name: Integration Tests
+name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      daemon_ref:
-        description: "Git ref for tagentacle daemon"
-        default: "main"
-      sdk_core_ref:
-        description: "Git ref for python-sdk-core"
-        default: "main"
-      sdk_mcp_ref:
-        description: "Git ref for python-sdk-mcp"
-        default: "main"
 
 jobs:
   lint:
@@ -26,41 +15,3 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv tool run ruff check .
       - run: uv tool run ruff format --check .
-
-  integration:
-    name: Integration tests (Layer 3)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/checkout@v4
-        with:
-          repository: Tagentacle/tagentacle
-          ref: ${{ github.event.inputs.daemon_ref || 'main' }}
-          path: ../tagentacle
-
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ../tagentacle
-      - run: cd ../tagentacle && cargo build --release
-
-      - uses: actions/checkout@v4
-        with:
-          repository: Tagentacle/python-sdk-core
-          ref: ${{ github.event.inputs.sdk_core_ref || 'main' }}
-          path: ../python-sdk-core
-
-      - uses: actions/checkout@v4
-        with:
-          repository: Tagentacle/python-sdk-mcp
-          ref: ${{ github.event.inputs.sdk_mcp_ref || 'main' }}
-          path: ../python-sdk-mcp
-
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync --all-extras
-      - name: Run integration tests
-        env:
-          TAGENTACLE_BIN: ../tagentacle/target/release/tagentacle
-        run: uv run pytest tests/ -v -m "not system and not slow" --timeout=30

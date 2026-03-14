@@ -20,9 +20,7 @@ class TestShellServerImport:
 
     def test_import(self):
         """ShellServer class can be imported."""
-        ss = pytest.importorskip(
-            "shell_server", reason="shell-server not installed"
-        )
+        ss = pytest.importorskip("shell_server", reason="shell-server not installed")
         assert hasattr(ss, "ShellServer")
 
 
@@ -60,9 +58,7 @@ class TestLocalExec:
     def test_stderr(self):
         """Standard error is captured separately."""
         server = self._make_server("test_stderr")
-        exit_code, _, stderr = server._exec_local(
-            "echo error_msg >&2", os.getcwd()
-        )
+        exit_code, _, stderr = server._exec_local("echo error_msg >&2", os.getcwd())
         assert exit_code == 0
         assert "error_msg" in stderr
 
@@ -80,9 +76,7 @@ class TestLocalExec:
     def test_invalid_cwd(self):
         """Invalid working directory returns error gracefully."""
         server = self._make_server("test_bad_cwd")
-        exit_code, _, stderr = server._exec_local(
-            "echo test", "/nonexistent_dir_xyz"
-        )
+        exit_code, _, stderr = server._exec_local("echo test", "/nonexistent_dir_xyz")
         assert exit_code != 0 or "not found" in stderr.lower()
 
     def test_pipe(self):

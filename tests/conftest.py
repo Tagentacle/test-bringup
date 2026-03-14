@@ -31,7 +31,9 @@ def _find_daemon_binary() -> str:
 
     workspace_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for profile in ("release", "debug"):
-        candidate = os.path.join(workspace_root, "tagentacle", "target", profile, "tagentacle")
+        candidate = os.path.join(
+            workspace_root, "tagentacle", "target", profile, "tagentacle"
+        )
         if os.path.isfile(candidate):
             return candidate
 
@@ -39,7 +41,9 @@ def _find_daemon_binary() -> str:
     if system_bin:
         return system_bin
 
-    pytest.skip("tagentacle daemon binary not found — set TAGENTACLE_BIN or build with cargo")
+    pytest.skip(
+        "tagentacle daemon binary not found — set TAGENTACLE_BIN or build with cargo"
+    )
 
 
 def _wait_for_port(host: str, port: int, timeout: float = 10.0):
