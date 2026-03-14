@@ -38,3 +38,10 @@ markers = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.tagentacle.test]
+requires = [
+    "python-sdk-core",
+    "python-sdk-mcp",
+]
+extras = ["dev", "mcp", "validation"]
