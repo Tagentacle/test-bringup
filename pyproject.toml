@@ -21,8 +21,8 @@ dev = [
 ]
 
 [tool.uv.sources]
-tagentacle-py-core = { path = "../python-sdk-core", editable = true }
-tagentacle-py-mcp = { path = "../python-sdk-mcp", editable = true }
+tagentacle-py-core = { path = "../tagentacle-py-core", editable = true }
+tagentacle-py-mcp = { path = "../tagentacle-py-mcp", editable = true }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -41,7 +41,7 @@ build-backend = "hatchling.build"
 
 [tool.tagentacle.test]
 requires = [
-    "python-sdk-core",
-    "python-sdk-mcp",
+    "tagentacle-py-core",
+    "tagentacle-py-mcp",
 ]
 extras = ["dev", "mcp", "validation"]

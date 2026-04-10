@@ -12,11 +12,11 @@ type = "bringup"
 git = "https://github.com/Tagentacle/tagentacle.git"
 description = "Rust daemon — built from source for e2e tests"
 
-[workspace.repos.python_sdk_core]
-git = "https://github.com/Tagentacle/python-sdk-core.git"
+[workspace.repos.tagentacle_py_core]
+git = "https://github.com/Tagentacle/tagentacle-py-core.git"
 
-[workspace.repos.python_sdk_mcp]
-git = "https://github.com/Tagentacle/python-sdk-mcp.git"
+[workspace.repos.tagentacle_py_mcp]
+git = "https://github.com/Tagentacle/tagentacle-py-mcp.git"
 
 [workspace.repos.mcp_interfaces]
 git = "https://github.com/Tagentacle/mcp-interfaces.git"

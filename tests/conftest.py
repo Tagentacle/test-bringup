@@ -114,6 +114,69 @@ def daemon(daemon_binary, daemon_host, daemon_port):
         proc.wait(timeout=5)
 
 
+def _find_launch_script() -> str:
+    """Locate system_launch.py from the sibling example-bringup package."""
+    workspace_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidate = os.path.join(workspace_root, "example-bringup", "launch", "system_launch.py")
+    if os.path.isfile(candidate):
+        return candidate
+    return ""
+
+
+@pytest.fixture(scope="session")
+def full_stack(daemon, daemon_host, daemon_port):
+    """Start the full-stack topology via system_launch.py.
+
+    Launches all nodes (MCP servers, inference, memory, agents, frontend)
+    using the bringup launcher, waits for key services to register, then
+    provides a config dict for probing.
+
+    Yields:
+        dict with keys: daemon_host, daemon_port, mcp_url
+    """
+    launch_script = _find_launch_script()
+    if not launch_script:
+        pytest.skip("example-bringup/launch/system_launch.py not found")
+
+    launch_dir = os.path.dirname(launch_script)
+    config_path = os.path.join(launch_dir, "system_launch.toml")
+    if not os.path.isfile(config_path):
+        pytest.skip("system_launch.toml not found")
+
+    env = {
+        **os.environ,
+        "TAGENTACLE_DAEMON_URL": f"tcp://{daemon_host}:{daemon_port}",
+    }
+
+    # Launch all nodes (skip daemon — already started by `daemon` fixture)
+    proc = subprocess.Popen(
+        ["python", launch_script, config_path],
+        cwd=launch_dir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        env=env,
+    )
+
+    # Wait for nodes to register
+    time.sleep(8)
+
+    yield {
+        "daemon_host": daemon_host,
+        "daemon_port": daemon_port,
+        "mcp_url": "http://127.0.0.1:8200/mcp",
+        "mock_mcp_url": "http://127.0.0.1:8400/mcp",
+        "process": proc,
+    }
+
+    # Teardown
+    proc.send_signal(signal.SIGTERM)
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait(timeout=5)
+
+
 @pytest.fixture
 async def make_node(daemon):
     """Factory fixture that creates connected & spinning Nodes.
