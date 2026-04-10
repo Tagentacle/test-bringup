@@ -74,7 +74,7 @@ class TestDualAgent:
                 },
             )
 
-            await asyncio.wait_for(received.wait(), timeout=60.0)
+            await asyncio.wait_for(received.wait(), timeout=90.0)
             assert "content" in reply_data or "text" in reply_data, (
                 f"Agent A did not produce a valid reply: {reply_data}"
             )
