@@ -66,10 +66,13 @@ class TestDualAgent:
             await asyncio.sleep(0.5)
 
             # Send a user message to Agent A's input topic
-            await node.publish("/chat/input", {
-                "role": "user",
-                "content": "Hello, Agent A.",
-            })
+            await node.publish(
+                "/chat/input",
+                {
+                    "role": "user",
+                    "content": "Hello, Agent A.",
+                },
+            )
 
             await asyncio.wait_for(received.wait(), timeout=30.0)
             assert "content" in reply_data or "text" in reply_data, (
@@ -94,10 +97,13 @@ class TestDualAgent:
             await asyncio.sleep(0.5)
 
             # Directly send a task to Agent B's input topic
-            await node.publish("/agent/b/input", {
-                "role": "user",
-                "content": "Execute: list current directory files.",
-            })
+            await node.publish(
+                "/agent/b/input",
+                {
+                    "role": "user",
+                    "content": "Execute: list current directory files.",
+                },
+            )
 
             await asyncio.wait_for(b_received.wait(), timeout=30.0)
             assert "content" in b_output or "text" in b_output, (
@@ -111,13 +117,16 @@ class TestDualAgent:
         node, task = await _make_probe(full_stack, "e2e_dual_shell")
         try:
             # Call shell service directly to verify it's reachable
-            resp = await node.call_service("/shell/exec", {
-                "command": "echo dual_agent_shell_test",
-                "cwd": "/tmp",
-            })
-            assert resp.get("exit_code") == 0 or "dual_agent_shell_test" in resp.get("stdout", ""), (
-                f"Shell service not reachable or returned unexpected result: {resp}"
+            resp = await node.call_service(
+                "/shell/exec",
+                {
+                    "command": "echo dual_agent_shell_test",
+                    "cwd": "/tmp",
+                },
             )
+            assert resp.get("exit_code") == 0 or "dual_agent_shell_test" in resp.get(
+                "stdout", ""
+            ), f"Shell service not reachable or returned unexpected result: {resp}"
         finally:
             await _cleanup(node, task)
 
@@ -126,13 +135,16 @@ class TestDualAgent:
         node, task = await _make_probe(full_stack, "e2e_dual_memory")
         try:
             # Publish a memory snapshot
-            await node.publish("/memory/latest", {
-                "session_id": "e2e_test_session",
-                "messages": [
-                    {"role": "user", "content": "hello"},
-                    {"role": "assistant", "content": "hi there"},
-                ],
-            })
+            await node.publish(
+                "/memory/latest",
+                {
+                    "session_id": "e2e_test_session",
+                    "messages": [
+                        {"role": "user", "content": "hello"},
+                        {"role": "assistant", "content": "hi there"},
+                    ],
+                },
+            )
 
             await asyncio.sleep(2)
 
@@ -140,8 +152,7 @@ class TestDualAgent:
             resp = await node.call_service("/memory/list", {})
             sessions = resp.get("sessions", [])
             session_ids = [
-                s.get("session_id", s) if isinstance(s, dict) else s
-                for s in sessions
+                s.get("session_id", s) if isinstance(s, dict) else s for s in sessions
             ]
             assert "e2e_test_session" in session_ids or len(sessions) > 0, (
                 f"Memory did not persist session. Sessions: {sessions}"
@@ -181,12 +192,20 @@ class TestDualAgent:
             await asyncio.sleep(0.5)
 
             # Trigger both agents
-            await node.publish("/chat/input", {
-                "role": "user", "content": "ping agent a",
-            })
-            await node.publish("/agent/b/input", {
-                "role": "user", "content": "ping agent b",
-            })
+            await node.publish(
+                "/chat/input",
+                {
+                    "role": "user",
+                    "content": "ping agent a",
+                },
+            )
+            await node.publish(
+                "/agent/b/input",
+                {
+                    "role": "user",
+                    "content": "ping agent b",
+                },
+            )
 
             # Wait for at least one agent to respond
             done, _ = await asyncio.wait(
@@ -197,9 +216,7 @@ class TestDualAgent:
                 timeout=30.0,
                 return_when=asyncio.FIRST_COMPLETED,
             )
-            assert len(done) >= 1, (
-                "Neither agent produced output within timeout"
-            )
+            assert len(done) >= 1, "Neither agent produced output within timeout"
         finally:
             await _cleanup(node, task)
 
