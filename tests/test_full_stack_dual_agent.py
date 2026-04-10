@@ -69,8 +69,8 @@ class TestDualAgent:
             await node.publish(
                 "/chat/input",
                 {
-                    "role": "user",
-                    "content": "Hello, Agent A.",
+                    "text": "Hello, Agent A. Reply briefly.",
+                    "session_id": "e2e_test",
                 },
             )
 
@@ -100,8 +100,8 @@ class TestDualAgent:
             await node.publish(
                 "/agent/b/input",
                 {
-                    "role": "user",
-                    "content": "Execute: list current directory files.",
+                    "text": "List files in current directory.",
+                    "session_id": "e2e_test",
                 },
             )
 
@@ -200,15 +200,15 @@ class TestDualAgent:
             await node.publish(
                 "/chat/input",
                 {
-                    "role": "user",
-                    "content": "ping agent a",
+                    "text": "ping agent a",
+                    "session_id": "e2e_test",
                 },
             )
             await node.publish(
                 "/agent/b/input",
                 {
-                    "role": "user",
-                    "content": "ping agent b",
+                    "text": "ping agent b",
+                    "session_id": "e2e_test",
                 },
             )
 
