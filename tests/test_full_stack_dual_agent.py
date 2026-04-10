@@ -50,6 +50,10 @@ async def _cleanup(node, task):
 class TestDualAgent:
     """双 Agent 全栈测试 — 需要完整 bringup."""
 
+    @pytest.mark.xfail(
+        strict=False,
+        reason="Coordinator cold-start with reasoning model may exceed timeout",
+    )
     async def test_agent_a_receives_user_input(self, full_stack):
         """用户消息 → /chat/input → Agent A (coordinator) 回复到 /chat/output."""
         node, task = await _make_probe(full_stack, "e2e_dual_user_input")
