@@ -15,7 +15,6 @@ Note: test_memory_rollback is skipped — rollback was removed per Q5 decision.
 """
 
 import asyncio
-import json
 import os
 
 import pytest
