@@ -81,9 +81,10 @@ async def test_mcp_server_health(full_stack):
     try:
         req = urllib.request.Request(url, method="GET")
         with urllib.request.urlopen(req, timeout=10) as resp:
-            assert resp.status in (200, 405)
+            assert resp.status in (200, 405, 406)
     except urllib.error.HTTPError as e:
-        assert e.code == 405, f"Unexpected HTTP error: {e.code}"
+        # 405 Method Not Allowed or 406 Not Acceptable are valid for MCP Streamable HTTP
+        assert e.code in (405, 406), f"Unexpected HTTP error: {e.code}"
 
 
 async def test_agent_can_list_topics(full_stack):
