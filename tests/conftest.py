@@ -116,12 +116,13 @@ def daemon(daemon_binary, daemon_host, daemon_port):
 
 def _find_launch_script() -> str:
     """Locate system_launch.py from the sibling example-bringup package."""
-    workspace_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    candidate = os.path.join(
-        workspace_root, "example-bringup", "launch", "system_launch.py"
-    )
-    if os.path.isfile(candidate):
-        return candidate
+    pkg_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for base in [pkg_root, os.path.dirname(pkg_root)]:
+        candidate = os.path.join(
+            base, "example-bringup", "launch", "system_launch.py"
+        )
+        if os.path.isfile(candidate):
+            return candidate
     return ""
 
 
