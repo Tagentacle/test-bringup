@@ -49,11 +49,13 @@ def _find_daemon_binary() -> str:
 def _wait_for_nodes(host: str, port: int, expected_count: int, timeout: float = 30.0):
     """Poll daemon's list_nodes until at least expected_count nodes register."""
     import asyncio as _aio
+
     deadline = time.monotonic() + timeout
 
     async def _poll():
         from tagentacle_py_core import Node
         import os as _os
+
         _os.environ["TAGENTACLE_DAEMON_URL"] = f"tcp://{host}:{port}"
         node = Node("_readiness_probe")
         await node.connect()
