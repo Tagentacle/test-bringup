@@ -192,7 +192,8 @@ def full_stack(daemon, daemon_host, daemon_port):
     )
 
     # Wait for nodes to register by polling daemon
-    _wait_for_nodes(daemon_host, daemon_port, expected_count=5, timeout=30.0)
+    # system_launch.toml has 10 nodes; wait for at least 8
+    _wait_for_nodes(daemon_host, daemon_port, expected_count=8, timeout=30.0)
 
     yield {
         "daemon_host": daemon_host,
