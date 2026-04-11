@@ -63,7 +63,15 @@ class TestDualAgent:
                 reply_data.update(payload)
                 received.set()
 
-            await asyncio.sleep(0.5)
+            # Wait until agent_node_1 is registered (cold-start readiness)
+            for _ in range(30):
+                resp = await node.call_service("/tagentacle/list_nodes", {})
+                node_ids = [n["node_id"] for n in resp.get("nodes", [])]
+                if any("agent" in nid for nid in node_ids):
+                    break
+                await asyncio.sleep(1)
+
+            await asyncio.sleep(1)
 
             # Send a user message to Agent A's input topic
             await node.publish(
