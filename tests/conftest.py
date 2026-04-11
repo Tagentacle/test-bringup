@@ -46,6 +46,39 @@ def _find_daemon_binary() -> str:
     )
 
 
+def _wait_for_nodes(host: str, port: int, expected_count: int, timeout: float = 30.0):
+    """Poll daemon's list_nodes until at least expected_count nodes register."""
+    import asyncio as _aio
+    deadline = time.monotonic() + timeout
+
+    async def _poll():
+        from tagentacle_py_core import Node
+        import os as _os
+        _os.environ["TAGENTACLE_DAEMON_URL"] = f"tcp://{host}:{port}"
+        node = Node("_readiness_probe")
+        await node.connect()
+        task = _aio.create_task(node.spin())
+        try:
+            while time.monotonic() < deadline:
+                try:
+                    resp = await node.call_service("/tagentacle/list_nodes", {})
+                    count = len(resp.get("nodes", []))
+                    if count >= expected_count:
+                        return
+                except Exception:
+                    pass
+                await _aio.sleep(1.0)
+        finally:
+            task.cancel()
+            try:
+                await task
+            except (_aio.CancelledError, Exception):
+                pass
+            await node.disconnect()
+
+    _aio.run(_poll())
+
+
 def _wait_for_port(host: str, port: int, timeout: float = 10.0):
     """Block until a TCP port is accepting connections."""
     import socket
@@ -158,8 +191,8 @@ def full_stack(daemon, daemon_host, daemon_port):
         env=env,
     )
 
-    # Wait for nodes to register
-    time.sleep(8)
+    # Wait for nodes to register by polling daemon
+    _wait_for_nodes(daemon_host, daemon_port, expected_count=5, timeout=30.0)
 
     yield {
         "daemon_host": daemon_host,
