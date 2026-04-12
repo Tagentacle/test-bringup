@@ -179,13 +179,16 @@ def full_stack(daemon, daemon_binary, daemon_host, daemon_port):
         "TAGENTACLE_DAEMON_URL": f"tcp://{daemon_host}:{daemon_port}",
     }
 
-    # Launch all nodes via `tagentacle launch` (daemon already running from fixture)
+    # Launch all nodes via `tagentacle launch --detach` (daemon already running from fixture)
+    # --detach makes launch return immediately after spawning, keeping nodes alive
     proc = subprocess.Popen(
-        [daemon_binary, "launch", config_path],
+        [daemon_binary, "launch", "--detach", config_path],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         env=env,
     )
+    # Wait for launch to finish (it returns immediately in detach mode)
+    proc.wait(timeout=30)
 
     # Wait for nodes to register by polling daemon
     # system_launch.toml has 10 nodes; wait for at least 8
@@ -199,13 +202,18 @@ def full_stack(daemon, daemon_binary, daemon_host, daemon_port):
         "process": proc,
     }
 
-    # Teardown
-    proc.send_signal(signal.SIGTERM)
-    try:
-        proc.wait(timeout=10)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-        proc.wait(timeout=5)
+    # Teardown: kill detached node processes
+    # Nodes were launched with --detach so they are orphan processes
+    import re
+    node_patterns = [
+        r"python.*server\.py", r"python.*gateway\.py",
+        r"python.*inference\.py", r"python.*memory\.py",
+        r"python.*orchestrator\.py", r"python.*client\.py",
+        r"python.*frontend\.py", r"python.*mock_server\.py",
+        r"python.*shell_server\.py",
+    ]
+    for pattern in node_patterns:
+        subprocess.run(["pkill", "-f", pattern], capture_output=True)
 
 
 @pytest.fixture

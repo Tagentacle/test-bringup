@@ -156,6 +156,22 @@ wheels = [
 ]
 
 [[package]]
+name = "container-orchestrator"
+version = "0.2.0"
+source = { editable = "../container-orchestrator" }
+dependencies = [
+    { name = "tagentacle-py-core" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "docker", marker = "extra == 'docker'", specifier = ">=7.0.0" },
+    { name = "podman", marker = "extra == 'podman'", specifier = ">=4.0.0,<5.0.0" },
+    { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
+]
+provides-extras = ["podman", "docker"]
+
+[[package]]
 name = "cryptography"
 version = "46.0.5"
 source = { registry = "https://pypi.org/simple" }
@@ -766,6 +782,24 @@ wheels = [
 ]
 
 [[package]]
+name = "shell-server"
+version = "0.2.0"
+source = { editable = "../shell-server" }
+dependencies = [
+    { name = "tagentacle-py-core" },
+    { name = "tagentacle-py-mcp" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "docker", marker = "extra == 'docker'", specifier = ">=7.0.0" },
+    { name = "podman", marker = "extra == 'podman'", specifier = ">=5.0.0" },
+    { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
+    { name = "tagentacle-py-mcp", editable = "../tagentacle-py-mcp" },
+]
+provides-extras = ["podman", "docker"]
+
+[[package]]
 name = "sse-starlette"
 version = "3.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -843,7 +877,7 @@ requires-dist = [
     { name = "pyjwt", specifier = ">=2.8" },
     { name = "starlette" },
     { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
-    { name = "tagentacle-py-mcp", marker = "extra == 'authority'", specifier = ">=0.4.0" },
+    { name = "tagentacle-py-mcp", marker = "extra == 'authority'", editable = "../tagentacle-py-mcp" },
 ]
 provides-extras = ["authority"]
 
@@ -852,15 +886,15 @@ name = "test-bringup"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
+    { name = "container-orchestrator" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-timeout" },
+    { name = "shell-server" },
     { name = "tagentacle-py-core" },
 ]
 
 [package.optional-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-timeout" },
-]
 mcp = [
     { name = "tagentacle-py-mcp" },
 ]
@@ -870,14 +904,16 @@ validation = [
 
 [package.metadata]
 requires-dist = [
+    { name = "container-orchestrator", editable = "../container-orchestrator" },
     { name = "jsonschema", marker = "extra == 'validation'", specifier = ">=4.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
-    { name = "pytest-timeout", marker = "extra == 'dev'", specifier = ">=2.0" },
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "pytest-asyncio", specifier = ">=0.24" },
+    { name = "pytest-timeout", specifier = ">=2.0" },
+    { name = "shell-server", editable = "../shell-server" },
     { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
     { name = "tagentacle-py-mcp", marker = "extra == 'mcp'", editable = "../tagentacle-py-mcp" },
 ]
-provides-extras = ["mcp", "validation", "dev"]
+provides-extras = ["mcp", "validation"]
 
 [[package]]
 name = "tomli"
