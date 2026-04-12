@@ -344,6 +344,11 @@ wheels = [
 ]
 
 [[package]]
+name = "mcp-interfaces"
+version = "0.1.0"
+source = { editable = "../mcp-interfaces" }
+
+[[package]]
 name = "packaging"
 version = "26.0"
 source = { registry = "https://pypi.org/simple" }
@@ -789,7 +794,7 @@ wheels = [
 [[package]]
 name = "tagentacle-py-core"
 version = "0.3.0"
-source = { editable = "../python-sdk-core" }
+source = { editable = "../tagentacle-py-core" }
 
 [package.metadata]
 requires-dist = [{ name = "jsonschema", marker = "extra == 'validation'", specifier = ">=4.0" }]
@@ -798,12 +803,14 @@ provides-extras = ["validation"]
 [[package]]
 name = "tagentacle-py-mcp"
 version = "0.4.0"
-source = { editable = "../python-sdk-mcp" }
+source = { editable = "../tagentacle-py-mcp" }
 dependencies = [
     { name = "anyio" },
     { name = "mcp" },
+    { name = "mcp-interfaces" },
     { name = "starlette" },
     { name = "tagentacle-py-core" },
+    { name = "tagentacle-py-tacl" },
     { name = "uvicorn" },
 ]
 
@@ -811,15 +818,38 @@ dependencies = [
 requires-dist = [
     { name = "anyio", specifier = ">=4.0" },
     { name = "mcp", specifier = ">=1.8" },
+    { name = "mcp-interfaces", editable = "../mcp-interfaces" },
     { name = "starlette" },
-    { name = "tagentacle-py-core", editable = "../python-sdk-core" },
+    { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
+    { name = "tagentacle-py-tacl", editable = "../tagentacle-py-tacl" },
     { name = "uvicorn", specifier = ">=0.20" },
 ]
 provides-extras = ["permission"]
 
 [[package]]
-name = "test-bringup"
+name = "tagentacle-py-tacl"
 version = "0.1.0"
+source = { editable = "../tagentacle-py-tacl" }
+dependencies = [
+    { name = "mcp" },
+    { name = "pyjwt" },
+    { name = "starlette" },
+    { name = "tagentacle-py-core" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mcp", specifier = ">=1.8" },
+    { name = "pyjwt", specifier = ">=2.8" },
+    { name = "starlette" },
+    { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
+    { name = "tagentacle-py-mcp", marker = "extra == 'authority'", specifier = ">=0.4.0" },
+]
+provides-extras = ["authority"]
+
+[[package]]
+name = "test-bringup"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "tagentacle-py-core" },
@@ -844,8 +874,8 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
     { name = "pytest-timeout", marker = "extra == 'dev'", specifier = ">=2.0" },
-    { name = "tagentacle-py-core", editable = "../python-sdk-core" },
-    { name = "tagentacle-py-mcp", marker = "extra == 'mcp'", editable = "../python-sdk-mcp" },
+    { name = "tagentacle-py-core", editable = "../tagentacle-py-core" },
+    { name = "tagentacle-py-mcp", marker = "extra == 'mcp'", editable = "../tagentacle-py-mcp" },
 ]
 provides-extras = ["mcp", "validation", "dev"]
 

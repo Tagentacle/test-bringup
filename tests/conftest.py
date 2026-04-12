@@ -149,45 +149,39 @@ def daemon(daemon_binary, daemon_host, daemon_port):
         proc.wait(timeout=5)
 
 
-def _find_launch_script() -> str:
-    """Locate system_launch.py from the sibling example-bringup package."""
+def _find_launch_config() -> str:
+    """Locate system_launch.toml from the sibling example-bringup package."""
     pkg_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for base in [pkg_root, os.path.dirname(pkg_root)]:
-        candidate = os.path.join(base, "example-bringup", "launch", "system_launch.py")
+        candidate = os.path.join(base, "example-bringup", "launch", "system_launch.toml")
         if os.path.isfile(candidate):
             return candidate
     return ""
 
 
 @pytest.fixture(scope="session")
-def full_stack(daemon, daemon_host, daemon_port):
-    """Start the full-stack topology via system_launch.py.
+def full_stack(daemon, daemon_binary, daemon_host, daemon_port):
+    """Start the full-stack topology via tagentacle launch.
 
     Launches all nodes (MCP servers, inference, memory, agents, frontend)
-    using the bringup launcher, waits for key services to register, then
+    using the tagentacle CLI, waits for key services to register, then
     provides a config dict for probing.
 
     Yields:
         dict with keys: daemon_host, daemon_port, mcp_url
     """
-    launch_script = _find_launch_script()
-    if not launch_script:
-        pytest.skip("example-bringup/launch/system_launch.py not found")
-
-    launch_dir = os.path.dirname(launch_script)
-    config_path = os.path.join(launch_dir, "system_launch.toml")
-    if not os.path.isfile(config_path):
-        pytest.skip("system_launch.toml not found")
+    config_path = _find_launch_config()
+    if not config_path:
+        pytest.skip("example-bringup/launch/system_launch.toml not found")
 
     env = {
         **os.environ,
         "TAGENTACLE_DAEMON_URL": f"tcp://{daemon_host}:{daemon_port}",
     }
 
-    # Launch all nodes (skip daemon — already started by `daemon` fixture)
+    # Launch all nodes via `tagentacle launch` (daemon already running from fixture)
     proc = subprocess.Popen(
-        ["python", launch_script, config_path],
-        cwd=launch_dir,
+        [daemon_binary, "launch", config_path],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         env=env,

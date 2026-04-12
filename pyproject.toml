@@ -5,6 +5,9 @@ description = "End-to-end integration tests for the Tagentacle system"
 requires-python = ">=3.10"
 dependencies = [
     "tagentacle-py-core>=0.3.0",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-timeout>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -13,11 +16,6 @@ mcp = [
 ]
 validation = [
     "jsonschema>=4.0",
-]
-dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.24",
-    "pytest-timeout>=2.0",
 ]
 
 [tool.uv.sources]
@@ -44,4 +42,4 @@ requires = [
     "tagentacle-py-core",
     "tagentacle-py-mcp",
 ]
-extras = ["dev", "mcp", "validation"]
+extras = ["mcp", "validation"]
