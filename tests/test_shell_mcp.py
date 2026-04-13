@@ -1,5 +1,5 @@
 """
-Integration tests for shell-server.
+Integration tests for shell-mcp.
 
 Tests ShellServer's local exec mode (no container runtime needed).
 Container routing and TACL auth are tested separately when available.
@@ -16,11 +16,11 @@ pytestmark = pytest.mark.integration
 
 
 class TestShellServerImport:
-    """Verify shell-server package is importable."""
+    """Verify shell-mcp package is importable."""
 
     def test_import(self):
         """ShellServer class can be imported."""
-        ss = pytest.importorskip("shell_server", reason="shell-server not installed")
+        ss = pytest.importorskip("shell_mcp", reason="shell-mcp not installed")
         assert hasattr(ss, "ShellServer")
 
 
@@ -28,7 +28,7 @@ class TestLocalExec:
     """Tests for _exec_local — local subprocess execution backend."""
 
     def _make_server(self, node_id="test_shell"):
-        ss = pytest.importorskip("shell_server")
+        ss = pytest.importorskip("shell_mcp")
         return ss.ShellServer(
             node_id=node_id,
             mcp_port=0,
@@ -93,7 +93,7 @@ class TestSpaceResolution:
     """Tests for _resolve_space — target container resolution."""
 
     def _make_server(self, **kwargs):
-        ss = pytest.importorskip("shell_server")
+        ss = pytest.importorskip("shell_mcp")
         return ss.ShellServer(
             node_id="test_space",
             mcp_port=0,
@@ -116,7 +116,7 @@ class TestCwdTracking:
     """Tests for per-session cwd state management."""
 
     def _make_server(self):
-        ss = pytest.importorskip("shell_server")
+        ss = pytest.importorskip("shell_mcp")
         return ss.ShellServer(
             node_id="test_cwd_track",
             mcp_port=0,
@@ -154,7 +154,7 @@ class TestExecRouting:
     """Tests for _exec dispatch logic."""
 
     def _make_server(self):
-        ss = pytest.importorskip("shell_server")
+        ss = pytest.importorskip("shell_mcp")
         return ss.ShellServer(
             node_id="test_route",
             mcp_port=0,
