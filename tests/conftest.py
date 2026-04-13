@@ -210,7 +210,7 @@ def full_stack(daemon, daemon_binary, daemon_host, daemon_port):
         r"python.*inference\.py", r"python.*memory\.py",
         r"python.*orchestrator\.py", r"python.*client\.py",
         r"python.*frontend\.py", r"python.*mock_server\.py",
-        r"python.*shell_server\.py",
+        r"python.*shell_mcp\.py",
     ]
     for pattern in node_patterns:
         subprocess.run(["pkill", "-f", pattern], capture_output=True)

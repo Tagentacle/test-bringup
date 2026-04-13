@@ -124,11 +124,11 @@ class TestDualAgent:
         """Shell server is active — verified via node list and MCP directory topic."""
         node, task = await _make_probe(full_stack, "e2e_dual_shell")
         try:
-            # Verify shell_server is registered as a node
+            # Verify shell_mcp is registered as a node
             resp = await node.call_service("/tagentacle/list_nodes", {})
             node_ids = [n["node_id"] for n in resp.get("nodes", [])]
-            assert "shell_server" in node_ids, (
-                f"shell_server not found in node list: {node_ids}"
+            assert "shell_mcp" in node_ids, (
+                f"shell_mcp not found in node list: {node_ids}"
             )
         finally:
             await _cleanup(node, task)
